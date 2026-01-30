@@ -57,3 +57,6 @@ module.exports = { appendMessage, readMessages };
 {"type":"message","user":"Messi","text":"fsdfsd","timestamp":1769766445649}
 {"type":"message","user":"User3","text":"fsdfsdfsdfsdfsdfsdf","timestamp":1769774759866}
 {"type":"message","user":"User","text":"fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfdsfds","timestamp":1769774768999}
+{"type":"message","user":"User1","text":"fdsfsdfsdf","timestamp":1769776307504}
+{"type":"message","user":"User2","text":"fsdfdsfsdfsd","timestamp":1769776311170}
+{"type":"message","user":"User4444","text":"fgdfgdfgdf","timestamp":1769779852540}
