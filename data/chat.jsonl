@@ -1,0 +1,57 @@
+// storage/files.js
+const fs = require("fs");
+const path = require("path");
+
+const DATA_DIR = path.join(__dirname, "..", "data");
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+
+function safeId(id) {
+  return String(id)
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 64);
+}
+
+function roomFilePath(roomId) {
+  return path.join(DATA_DIR, `${safeId(roomId)}.jsonl`);
+}
+
+function appendMessage(roomId, msg) {
+  const line = JSON.stringify(msg) + "\n";
+  fs.appendFileSync(roomFilePath(roomId), line, "utf8");
+}
+
+function readMessages(roomId, { limit = 50, beforeTs = Infinity } = {}) {
+  const file = roomFilePath(roomId);
+  if (!fs.existsSync(file)) return [];
+  const lines = fs.readFileSync(file, "utf8").trim().split("\n");
+  const all = [];
+  for (let i = lines.length - 1; i >= 0 && all.length < limit; i--) {
+    try {
+      const obj = JSON.parse(lines[i]);
+      if (obj.type === "message" && obj.timestamp < beforeTs) {
+        all.push(obj);
+      }
+    } catch {
+
+    }
+  }
+  return all.reverse(); 
+}
+
+module.exports = { appendMessage, readMessages };
+{"type":"message","user":"User1","text":"hello","timestamp":1769763542805}
+{"type":"message","user":"User2","text":"hi","timestamp":1769763549117}
+{"type":"message","user":"User","text":"fsdfsdfsd","timestamp":1769763642697}
+{"type":"message","user":"Anon","text":"fsdfsdfsdf","timestamp":1769763650064}
+{"type":"message","user":"User","text":"fsdfsdfs","timestamp":1769764572813}
+{"type":"message","user":"User","text":"fsdfsdfs","timestamp":1769764707478}
+{"type":"message","user":"User45","text":"cmf?","timestamp":1769765149696}
+{"type":"message","user":"Anon","text":"bine, tu?","timestamp":1769765178757}
+{"type":"message","user":"User34","text":"bine si eu","timestamp":1769765876878}
+{"type":"message","user":"User","text":"bine si tu?","timestamp":1769765882213}
+{"type":"message","user":"User","text":"bravooo","timestamp":1769765923632}
+{"type":"message","user":"User434","text":"tyyy","timestamp":1769765927357}
+{"type":"message","user":"Ronaldo","text":"helloooooo","timestamp":1769765999075}
+{"type":"message","user":"Messi","text":"hi","timestamp":1769766006918}
+{"type":"message","user":"Messi","text":"fsdfsd","timestamp":1769766445649}

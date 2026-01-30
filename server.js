@@ -1,30 +1,55 @@
-// express pentru fisiere si rute http, http ca server de baza pe care ruleaza express si ws, ws comunicare in timp real, un singur server
+// express pentru fisiere si rute http, http ca server de baza pe care ruleaza express si ws,
+// ws comunicare in timp real, un singur server
+
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
+const fs = require("fs");
+const path = require("path");
+
+const DATA_DIR = path.join(__dirname, "data");
+const CHAT_FILE = path.join(DATA_DIR, "chat.jsonl");
+const HISTORY_LIMIT = 50;
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+
+function readLastMessages(filepath, limit = 50) {
+  if (!fs.existsSync(filepath)) return [];
+
+  const lines = fs.readFileSync(filepath, "utf8").trim().split("\n");
+  const last = lines.slice(-limit);
+
+  const messages = [];
+  for (const line of last) {
+    try {
+      messages.push(JSON.parse(line));
+    } catch {}
+  }
+  return messages;
+}
+
+function saveMessage(msg) {
+  const line = JSON.stringify(msg) + "\n";
+  fs.appendFileSync(CHAT_FILE, line, "utf8");
+}
 
 const app = express(); // creaza aplicatia express
+app.use(express.static("public")); // serveste fisierele statice din folderul public
 
-app.use(express.static("public")); //  serveste fisierele statice din folderul public
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-const server = http.createServer(app); // creaza server http, paseaza handler ul express
-const wss = new WebSocket.Server({ server }); // cereaza serverul websocket, atsat peste serverul http
-
-// functie de trimis mesaj clientilor
 function broadcast(data, except = null) {
   wss.clients.forEach((client) => {
     if (client !== except && client.readyState === WebSocket.OPEN) {
-      // sare peste expeditor, doar pentru clientii cu conexiune activa
       client.send(data);
     }
   });
 }
 
-// cand un client se contecteaza prin websocket
 wss.on("connection", (ws) => {
   console.log("Client conectat");
 
-  // trimite un mesaj de bun venit clientului curent
   ws.send(
     JSON.stringify({
       type: "system",
@@ -33,45 +58,50 @@ wss.on("connection", (ws) => {
     }),
   );
 
-  // cand serverul primeste mesaj de la client
+  const history = readLastMessages(CHAT_FILE, HISTORY_LIMIT);
+  ws.send(
+    JSON.stringify({
+      type: "history",
+      messages: history,
+    }),
+  );
+
   ws.on("message", (message) => {
-    // JSON { type: 'message', user: 'nume', text: '...' }
     try {
-      const data = JSON.parse(message); // parse mesaj ca string
+      const data = JSON.parse(message);
 
       if (data.type === "message") {
         const payload = {
           type: "message",
-          user: data.user?.slice(0, 32) || "Anon", // max 32 caractere pe user
-          text: String(data.text || "").slice(0, 1000), // max 1000 caractere pe text
+          user: data.user?.slice(0, 32) || "Anon",
+          text: String(data.text || "").slice(0, 1000),
           timestamp: Date.now(),
         };
-        broadcast(JSON.stringify(payload)); // broadcast catre toti clientii si expeditor
+
+        saveMessage(payload);
+
+        broadcast(JSON.stringify(payload));
       }
 
       if (data.type === "typing") {
-        // transmite typing indicator
         const payload = {
           type: "typing",
           user: data.user?.slice(0, 32) || "Anon",
-          isTyping: !!data.isTyping, // !! -> converteste obiectul la boolean
+          isTyping: !!data.isTyping,
         };
-        broadcast(JSON.stringify(payload), ws); // broadcast catre toti clientii fara expeditor
+        broadcast(JSON.stringify(payload), ws);
       }
     } catch (e) {
       console.error("Mesaj invalid:", e);
     }
   });
 
-  // cand clientul inchide conexiunea
   ws.on("close", () => {
     console.log("Client deconectat");
   });
 });
 
-const PORT = 3000; // portul pe care asculta serverul
-
-// porneste serverul http si implicit ws
+const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server pornește pe http://localhost:${PORT}`);
 });

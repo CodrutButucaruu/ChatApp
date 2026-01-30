@@ -23,7 +23,13 @@ ws.addEventListener("message", (evt) => {
   try {
     const data = JSON.parse(evt.data);
     console.log(data);
-    if (data.type === "system") {
+    if (data.type === "history") {
+      const messages = data.messages;
+      messages.forEach((message) => {
+        addChatMessage(message.user, message.text, message.timestamp);
+        // console.log(message.user, message.text, message.timestamp);
+      });
+    } else if (data.type === "system") {
       addSystemMessage(data.text, data.timestamp);
     } else if (data.type === "typing") {
       handleTypingEvent(data.user, data.isTyping);

@@ -11,6 +11,12 @@ export function createWS({ onOpen, onClose, onSystem, onTyping, onMessage }) {
         case "system":
           onSystem?.(data.text, data.timestamp);
           break;
+        case "history":
+          const messages = data.messages;
+          messages.forEach((message) => {
+            onMessage?.(message.user, message.text, message.timestamp);
+          });
+          break;
         case "typing":
           onTyping?.(data.user, data.isTyping);
           break;
