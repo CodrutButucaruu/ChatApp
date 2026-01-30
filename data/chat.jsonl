@@ -55,3 +55,5 @@ module.exports = { appendMessage, readMessages };
 {"type":"message","user":"Ronaldo","text":"helloooooo","timestamp":1769765999075}
 {"type":"message","user":"Messi","text":"hi","timestamp":1769766006918}
 {"type":"message","user":"Messi","text":"fsdfsd","timestamp":1769766445649}
+{"type":"message","user":"User3","text":"fsdfsdfsdfsdfsdfsdf","timestamp":1769774759866}
+{"type":"message","user":"User","text":"fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfdsfds","timestamp":1769774768999}

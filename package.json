@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "express": "^5.2.1",
     "we": "^1.5.10",
     "ws": "^8.19.0"

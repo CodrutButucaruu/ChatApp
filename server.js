@@ -11,7 +11,7 @@ const DATA_DIR = path.join(__dirname, "data");
 const CHAT_FILE = path.join(DATA_DIR, "chat.jsonl");
 const HISTORY_LIMIT = 50;
 
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR); // creaza directory ul pe filesystem
 
 function readLastMessages(filepath, limit = 50) {
   if (!fs.existsSync(filepath)) return [];
